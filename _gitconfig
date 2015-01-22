@@ -1,0 +1,34 @@
+[user]
+    name = Jean-Philippe Gelinas
+    email = jpgelinas@avencall.com
+[color]
+    ui = true
+    diff = auto
+    status = auto
+    branch = auto
+
+[push]
+    default = upstream
+
+[core]
+    editor = vim
+    pager = less -R
+	excludesfile = /home/jp/.gitignore
+
+[alias]
+    diverges = !bash -c 'diff -u <(git rev-list --first-parent "${1}") <(git rev-list --first-parent "${2:-HEAD}") | s>
+    st = status
+    ci = commit
+    br = branch
+    co = checkout
+    df = diff
+    lg = log -p
+    up = !sh -c 'git pull --rebase --prune && git log --pretty=format:\"%Cred%ae %Creset- %C(yellow)%s %Creset(%ar)\" >
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    ls = ls-files
+
+[mergetool "meld"]
+    cmd = meld --output "$MERGED" "$LOCAL" "$MERGED" "$REMOTE"
+[merge]
+	conflictstyle = diff3
