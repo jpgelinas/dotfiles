@@ -4,7 +4,6 @@
 " ==========================================================
 " Pep8 - http://pypi.python.org/pypi/pep8
 " Pyflakes
-" Ack
 " Rake & Ruby for command-t
 " nose, django-nose
 
@@ -81,6 +80,97 @@ map <leader>td <Plug>TaskList
 " Run pep8
 let g:pep8_map='<leader>8'
 
+" ==========================================================
+" Jedi
+" ==========================================================
+autocmd FileType python setlocal omnifunc=jedi#completions
+let g:jedi#completions_enabled = 0
+let g:jedi#auto_vim_configuration = 0
+let g:jedi#show_call_signatures=0
+"broke ?
+"let g:jedi#popup_select_first=0
+"
+" ==========================================================
+" Neocomplete
+" ==========================================================
+let g:neocomplete#enable_at_startup = 1
+let g:neocomplete#enable_smart_case = 1
+let g:neocomplete#sources#syntax#min_keyword_length = 3
+
+" Recommended key-mappings.
+" <CR>: close popup and save indent.
+inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
+function! s:my_cr_function()
+  return neocomplete#close_popup() . "\<CR>"
+  " For no inserting <CR> key.
+  "return pumvisible() ? neocomplete#close_popup() : "\<CR>"
+endfunction
+" <TAB>: completion.
+inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
+" <C-h>, <BS>: close popup and delete backword char.
+inoremap <expr><C-h> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><BS> neocomplete#smart_close_popup()."\<C-h>"
+inoremap <expr><C-y>  neocomplete#close_popup()
+inoremap <expr><C-e>  neocomplete#cancel_popup()
+
+" Enable omni completion.
+autocmd FileType css setlocal omnifunc=csscomplete#CompleteCSS
+autocmd FileType html,markdown setlocal omnifunc=htmlcomplete#CompleteTags
+autocmd FileType javascript setlocal omnifunc=javascriptcomplete#CompleteJS
+autocmd FileType python setlocal omnifunc=pythoncomplete#Complete
+autocmd FileType xml setlocal omnifunc=xmlcomplete#CompleteTags
+
+" Enable heavy omni completion.
+if !exists('g:neocomplete#sources#omni#input_patterns')
+  let g:neocomplete#sources#omni#input_patterns = {}
+endif
+" ==========================================================
+" Python-mode
+" ==========================================================
+" Activate rope
+" Keys:
+" K             Show python docs
+"   Rope autocomplete
+" g     Rope goto definition
+" d     Rope show documentation
+" f     Rope find occurrences
+" b     Set, unset breakpoint (g:pymode_breakpoint enabled)
+" [[            Jump on previous class or function (normal, visual, operator modes)
+" ]]            Jump on next class or function (normal, visual, operator modes)
+" [M            Jump on previous class or method (normal, visual, operator modes)
+" ]M            Jump on next class or method (normal, visual, operator modes)
+"let g:pymode_rope = 1
+let g:pymode_rope = 0
+
+" Documentation
+let g:pymode_doc = 1
+let g:pymode_doc_key = 'K'
+
+"Linting
+let g:pymode_lint = 1
+let g:pymode_lint_checker = "pyflakes,pep8"
+let g:pymode_lint_ignore = "E501"
+" Auto check on save
+let g:pymode_lint_write = 1
+
+" Support virtualenv
+let g:pymode_virtualenv = 1
+
+" Enable breakpoints plugin
+let g:pymode_breakpoint = 1
+let g:pymode_breakpoint_key = 'b'
+
+" syntax highlighting
+let g:pymode_syntax = 1
+let g:pymode_syntax_all = 1
+let g:pymode_syntax_indent_errors = g:pymode_syntax_all
+let g:pymode_syntax_space_errors = g:pymode_syntax_all
+
+" Don't autofold code
+let g:pymode_folding = 0
+
+
+map <Leader><Esc> :let @/=''<CR>
 " run py.test's
 nmap <silent><Leader>tf <Esc>:Pytest file<CR>
 nmap <silent><Leader>tc <Esc>:Pytest class<CR>
@@ -88,9 +178,10 @@ nmap <silent><Leader>tm <Esc>:Pytest method<CR>
 nmap <silent><Leader>tn <Esc>:Pytest next<CR>
 nmap <silent><Leader>tp <Esc>:Pytest previous<CR>
 nmap <silent><Leader>te <Esc>:Pytest error<CR>
+nmap <silent><Leader>' <Esc>ciw''<Esc>P
 
 " Run django tests
-map <leader>dt :set makeprg=python\ manage.py\ test\|:call MakeGreen()<CR>
+"map <leader>dt :set makeprg=python\ manage.py\ test\|:call MakeGreen()<CR>
 
 " Reload Vimrc
 map <silent> <leader>V :source ~/.vimrc<CR>:filetype detect<CR>:exe ":echo 'vimrc reloaded'"<CR>
@@ -116,9 +207,9 @@ imap <C-W> <C-O><C-W>
 map <leader>n :NERDTreeToggle<CR>
 
 " Run command-t file search
-map <leader>f :CommandT<CR>
-" Ack searching
-nmap <leader>a <Esc>:Ack!
+map <leader>f :CtrlP<CR>
+" Ag searching
+nmap <leader>a <Esc>:Ag!
 
 " Load the Gundo window
 map <leader>g :GundoToggle<CR>
@@ -160,7 +251,7 @@ set wildignore+=*.o,*.obj,.git,*.pyc
 set wildignore+=eggs/**
 set wildignore+=*.egg-info/**
 
-set grepprg=ack         " replace the default grep program with ack
+set grepprg=ag         " replace the default grep program with ag
 
 
 " Set working directory
@@ -188,7 +279,7 @@ set nowrap                  " don't wrap text
 set linebreak               " don't wrap textin the middle of a word
 set autoindent              " always set autoindenting on
 set smartindent             " use smart indent if there is no indent file
-set tabstop=4               " <tab> inserts 4 spaces 
+set tabstop=4               " <tab> inserts 4 spaces
 set shiftwidth=4            " but an indent level is 2 spaces wide.
 set softtabstop=4           " <BS> over an autoindent deletes both spaces.
 set expandtab               " Use spaces, not tabs, for autoindent/tab key.
@@ -200,6 +291,9 @@ set foldlevel=99            " don't fold by default
 
 " don't outdent hashes
 inoremap # #
+
+" remove trailing whitespaces on save
+autocmd BufWritePre * :%s/\s\+$//e
 
 " close preview window automatically when we move around
 autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
@@ -231,13 +325,13 @@ set list
 """ Searching and Patterns
 set ignorecase              " Default to using case insensitive searches,
 set smartcase               " unless uppercase letters are used in the regex.
-set smarttab                " Handle tabs more intelligently 
+set smarttab                " Handle tabs more intelligently
 set hlsearch                " Highlight searches by default.
 set incsearch               " Incrementally search while typing a /regex
 
 """" Display
 if has("gui_running")
-    colorscheme zenburn
+    colorscheme hybrid
     "colorscheme desert
     " Remove menu bar
     set guioptions-=m
@@ -247,8 +341,8 @@ if has("gui_running")
 else
     "colorscheme torte
     "colorscheme desert
-    let g:zenburn_high_Contrast=1
-    colorscheme zenburn
+    "let g:zenburn_high_Contrast=1
+    colorscheme hybrid
 endif
 
 " Paste from clipboard
@@ -289,7 +383,7 @@ autocmd FileType html,xhtml,xml,css setlocal expandtab shiftwidth=2 tabstop=2 so
 " Python
 "au BufRead *.py compiler nose
 "au FileType python compiler pylint
-au FileType python set omnifunc=pythoncomplete#Complete
+"au FileType python set omnifunc=pythoncomplete#Complete
 "au BufWritePost *.py !pylint <afile>
 au FileType python setlocal expandtab shiftwidth=4 tabstop=8 softtabstop=4 smartindent cinwords=if,elif,else,for,while,try,except,finally,def,class,with
 au BufRead *.py set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
@@ -299,7 +393,7 @@ let g:pyflakes_use_quickfix = 0
 
 " PHP
 au Filetype php setlocal noet
-au Filetype php map <F5> :!php -l %<CR>
+"au Filetype php map <F5> :!php -l %<CR>
 
 " JS
 au Filetype js setlocal noet
@@ -332,3 +426,5 @@ set tags=~/.mytags
 map <leader>tt :TlistToggle<CR>
 
 let g:debuggerPort = 10001
+
+
