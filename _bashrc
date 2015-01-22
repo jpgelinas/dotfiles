@@ -1,10 +1,24 @@
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-#
-#
-PATH=~/bin:~/bin/android-sdk-linux_86/tools:$PATH
-XC_PATH=~/src/xivo/xivo-client-qt/bin
+#export CDPATH=:/x
+export QT_PATH=/usr/bin
+export PATH=~/bin:~/.cabal/bin:$PATH
+export XC_PATH=~/src/xivo/xivo-client-qt/bin
+export PYTHONPATH=\
+$HOME/src/python/xivodev/:\
+/x/xivo-ws/:\
+/x/xivo-amid/:\
+/x/xivo-lib-python/:\
+/x/xivo-dao/:\
+/x/xivo-agent/:\
+/x/xivo-provisioning/:\
+/x/xivo-dird/:\
+/x/xivo-dist/:\
+/x/xivo-acceptance/:\
+/x/xivo-bus/:\
+/x/xivo-tools/dev-tools/repo-check/:\
+/x/pylinphonelib/
 #
 #osx color terminal
 export CLICOLOR=1
@@ -77,13 +91,25 @@ case $TERM in
 esac
 
 alias pacman='sudo pacman'
+alias virsh='sudo virsh'
 alias http='python2 -m SimpleHTTPServer'
 alias vi='gvim'
 alias catprofiles='cat ~/.config/XIVO/XIVO_Client.ini | grep engine'
-alias xd='xivo-dev -sv -r root@192.168.32.186'
+alias xdg='xivo-dev -v -r root@ogit'
+alias xdt='xivo-dev -v -r root@otest'
 alias cdx='cd /home/jp/src/xivo/'
 alias grep='grep --exclude-dir=".git"'
-alias qmake='qmake-qt4 QMAKE_CXX=colorgcc'
+alias switch-test='switch_vlan 100 3,4,5,6,7,8'
+alias switch-split='switch_vlan 333 6,7,8; switch_vlan 330 3,4,5'
+alias switch-full0='switch_vlan 330 3,4,5,6,7,8'
+alias switch-full3='switch_vlan 333 3,4,5,6,7,8'
+alias setkbus='setxkbmap us -variant altgr-intl'
+alias glog="git log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
+alias llettuce="/x/xivo-acceptance/utils/scenarios.sh"
+alias halt="sudo systemctl poweroff"
+alias gitk="gitk --all&"
+alias evil="emacsclient -c -nw"
+alias xalembic='alembic -c /x/.xivoalembic.ini'
 
 # dircolors... make sure that we have a color terminal, dircolors exists, and ls supports it.
 if $TERM_IS_COLOR && ( dircolors --help && ls --color ) &> /dev/null; then
@@ -212,3 +238,35 @@ h() { if [ -z "$1" ]; then history; else history | grep "$@"; fi; }
 
 _JAVA_AWT_WM_NONREPARENTING=1;
 
+man() {
+    env LESS_TERMCAP_mb=$'\E[01;31m' \
+    LESS_TERMCAP_md=$'\E[01;38;5;74m' \
+    LESS_TERMCAP_me=$'\E[0m' \
+    LESS_TERMCAP_se=$'\E[0m' \
+    LESS_TERMCAP_so=$'\E[38;5;246m' \
+    LESS_TERMCAP_ue=$'\E[0m' \
+    LESS_TERMCAP_us=$'\E[04;38;5;146m' \
+    man "$@"
+}
+
+function restore () {
+    vm_name=${1:-"o0-git"}
+    VBoxManage controlvm $vm_name poweroff > /dev/null
+    sleep 1
+    VBoxManage snapshot $vm_name restorecurrent > /dev/null
+    VBoxManage startvm $vm_name > /dev/null
+}
+
+alias rebuild='ssh farm packaging-farm --cd skaro rebuild && ssh mirror ./update_xivo-dev'
+
+function coverage () {
+    if [ $# -lt 2 -o "$1" = "--help" -o "$1" = "-h" ] ; then
+        echo "Usage: coverage module_name coverage_starting_point"
+        return
+    fi
+    local module_name="$1"
+    local module_path="$2"
+    rm -r ".coverage" "cover"
+    nosetests2 --with-coverage --cover-package="$module_name" --cover-html "$module_path"
+    luakit cover/index.html
+}
